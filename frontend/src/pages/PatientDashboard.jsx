@@ -8,11 +8,15 @@ import { Link } from 'react-router-dom';
 const PatientDashboard = () => {
     const [name, setName] = useState("");
     const [appointments, setAppointments] = useState([]);
+    const [medications, setMedications] = useState([]);
     const [loadingAppointments, setLoadingAppointments] = useState(true);
+    const [loadingMedications, setLoadingMedications] = useState(true);
+
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userDocRef = doc(db, "users", user.uid); // Reference to the user's document
+                const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists()) {
                     setName(userDocSnap.data().fullName || "Patient");
@@ -22,9 +26,11 @@ const PatientDashboard = () => {
                 }
 
                 fetchAppointments(user.uid);
+                fetchMedications(user.uid);
             } else {
                 setName("Guest");
                 setAppointments([]);
+                setMedications([]);
             }
         });
 
@@ -48,6 +54,26 @@ const PatientDashboard = () => {
             console.error("Error fetching appointments:", err);
         } finally {
             setLoadingAppointments(false);
+        }
+    };
+
+    const fetchMedications = async (userId) => {
+        setLoadingMedications(true);
+        try {
+            const medicationsQuery = query(
+                collection(db, 'medications'),
+                where('patientId', '==', userId)
+            );
+            const querySnapshot = await getDocs(medicationsQuery);
+            const medicationsList = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setMedications(medicationsList);
+        } catch (err) {
+            console.error("Error fetching medications:", err);
+        } finally {
+            setLoadingMedications(false);
         }
     };
 
@@ -142,26 +168,17 @@ const PatientDashboard = () => {
                     {/* Medication Schedule */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h2 className="text-xl font-semibold mb-4">Today's Medications</h2>
-                        <div className="space-y-4">
-                            <MedicationCard
-                                name="Lisinopril"
-                                dosage="10mg"
-                                time="8:00 AM"
-                                status="taken"
-                            />
-                            <MedicationCard
-                                name="Metformin"
-                                dosage="500mg"
-                                time="2:00 PM"
-                                status="upcoming"
-                            />
-                            <MedicationCard
-                                name="Atorvastatin"
-                                dosage="20mg"
-                                time="8:00 PM"
-                                status="upcoming"
-                            />
-                        </div>
+                        {loadingMedications ? (
+                            <p className="text-gray-500">Loading medications...</p>
+                        ) : medications.length === 0 ? (
+                            <p className="text-gray-500">No medications prescribed</p>
+                        ) : (
+                            <div className="space-y-4">
+                                {medications.map((med) => (
+                                    <MedicationCard key={med.id} name={med.name} dosage={med.dosage} time={med.frequency || "Not specified"} status="upcoming" />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
