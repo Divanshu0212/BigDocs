@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Activity, Users, MessageSquare, UserCircle } from 'lucide-react';
+import React from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Import all pages
+import Landing from './pages/LandingPage';
+import DoctorListingPage from './pages/DoctorListingPage';
+import PatientDashboard from './pages/PatientDashboard';
+import TelemedicineInterface from './pages/TelemedicneInterface';
+import CommunityForum from './pages/CommunityForum';
+import Signup from './pages/Signup';
+import Login from './pages/Login';
+import PatientAppointmentBooking from './pages/PatienAppointmentBooking';
+import DoctorAppointmentBooking from './pages/DoctorAppointmentBooking';
+import DoctorDashboard from './pages/DoctorDashboard';
 
+const App = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/doctors" element={<DoctorListingPage />} />
+        <Route path="/patient-dashboard" element={<PatientDashboard />} />
+        <Route path="/telemedicine" element={<TelemedicineInterface />} />
+        <Route path="/community" element={<CommunityForum />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/patientappointmentbooking" element={<PatientAppointmentBooking />} />
+        <Route path="/book-appointment" element={<PatientAppointmentBooking />} />
+        <Route path="/manage-appointments" element={<DoctorAppointmentBooking />} />
+        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+        
+      </Routes>
+    </Router>
+  );
+};
 
-export default App
+export default App;
