@@ -1,5 +1,6 @@
-import React from 'react';
-import { Bell, Calendar, MessageSquare, Heart, Activity, Brain, Search, Menu, X } from 'lucide-react';
+import React from "react"
+import {Bell, Calendar, MessageSquare, Heart, Activity, Brain, Search, Menu, X} from 'lucide-react';
+import {Link} from "react-router-dom";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -17,9 +18,12 @@ export const Header = () => {
             <a href="#" className="text-gray-600 hover:text-blue-600">Services</a>
             <a href="#" className="text-gray-600 hover:text-blue-600">Find Doctors</a>
             <a href="#" className="text-gray-600 hover:text-blue-600">Community</a>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              Sign In
-            </button>
+            <Link to={"/login"}>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Sign In
+              </button>
+            </Link>
+
           </div>
 
           <div className="md:hidden">
