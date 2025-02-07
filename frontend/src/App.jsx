@@ -14,6 +14,8 @@ import Login from './pages/Login';
 import PatientAppointmentBooking from './pages/PatienAppointmentBooking';
 import DoctorAppointmentBooking from './pages/DoctorAppointmentBooking';
 import DoctorDashboard from './pages/DoctorDashboard';
+import SymptomChecker from './pages/SymptomChecker';
+import DoctorMedicationEditor from './pages/DoctorMedicationsEditor';
 
 const App = () => {
   return (
@@ -30,6 +32,8 @@ const App = () => {
         <Route path="/book-appointment" element={<PatientAppointmentBooking />} />
         <Route path="/manage-appointments" element={<DoctorAppointmentBooking />} />
         <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+        <Route path="/symptom" element={<SymptomChecker/>}/>
+        <Route path="/medications" element={<DoctorMedicationEditor/>}/>
         
       </Routes>
     </Router>

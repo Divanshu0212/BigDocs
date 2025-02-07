@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 import { Calendar, Clock, Activity, Heart, Bell, Pill, FileText, MessageSquare } from 'lucide-react';
 import { auth, db } from '../firebase/firebase'; // Ensure db is imported for Firestore
 import { Link } from 'react-router-dom';
@@ -9,11 +9,18 @@ const PatientDashboard = () => {
     const [name, setName] = useState("");
     const [appointments, setAppointments] = useState([]);
     const [loadingAppointments, setLoadingAppointments] = useState(true);
-
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                setName(user.displayName || "Patient");
+                const userDocRef = doc(db, "users", user.uid); // Reference to the user's document
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    setName(userDocSnap.data().fullName || "Patient");
+                } else {
+                    console.log("No user document found!");
+                    setName("Patient");
+                }
+
                 fetchAppointments(user.uid);
             } else {
                 setName("Guest");
@@ -43,6 +50,7 @@ const PatientDashboard = () => {
             setLoadingAppointments(false);
         }
     };
+
 
     return (
         <div className="min-h-screen bg-gray-50 pt-16">
@@ -103,9 +111,11 @@ const PatientDashboard = () => {
                                         specialty={appointment.specialty || "General"}
                                         date={appointment.date}
                                         time={appointment.time}
-                                        type={appointment.type || "In-Person"}
+                                        type="Online" // Always Online
+                                        status={appointment.status || "Pending"} // Default to Pending if not available
                                     />
                                 ))}
+
                             </div>
                         )}
                     </div>
@@ -169,21 +179,36 @@ const QuickActionCard = ({ icon, title, description }) => (
     </div>
 );
 
-const AppointmentCard = ({ doctor, specialty, date, time, type }) => (
-    <div className="flex items-center gap-4 p-3 border rounded-lg">
-        <div className="flex-1">
-            <h4 className="font-semibold">{doctor}</h4>
-            <p className="text-sm text-gray-600">{specialty}</p>
-            <div className="flex items-center gap-2 mt-1">
-                <Clock className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-600">{date} at {time}</span>
+const AppointmentCard = ({ doctor, specialty, date, time, type, status }) => {
+    // Determine status styling
+    const statusColors = {
+        accepted: "bg-green-100 text-green-600",
+        rejected: "bg-red-100 text-red-600",
+        pending: "bg-yellow-100 text-yellow-600"
+    };
+
+    return (
+        <div className="flex items-center gap-4 p-3 border rounded-lg">
+            <div className="flex-1">
+                <h4 className="font-semibold">{doctor}</h4>
+                <p className="text-sm text-gray-600">{specialty}</p>
+                <div className="flex items-center gap-2 mt-1">
+                    <Clock className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">{date} at {time}</span>
+                </div>
+            </div>
+            <div className="flex flex-col items-end">
+                <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
+                    Online
+                </span>
+                <span className={`px-3 py-1 mt-1 rounded-full text-sm ${statusColors[status.toLowerCase()] || "bg-green-100 text-green-600"}`}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
             </div>
         </div>
-        <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
-            {type}
-        </span>
-    </div>
-);
+    );
+};
+
 
 const HealthMetric = ({ icon, title, value, trend }) => (
     <div className="flex items-center gap-4">

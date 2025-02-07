@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase/firebase';
-import { collection, getDocs, query, where, updateDoc, doc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc } from 'firebase/firestore';
 import { Calendar, Clock, User, Check, X } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -41,17 +41,35 @@ const DoctorAppointmentBooking = () => {
 
         try {
             const appointmentsQuery = query(
-                collection(db, 'appointments'),
-                where('doctorId', '==', userId)
+                collection(db, "appointments"),
+                where("doctorId", "==", userId)
             );
             const querySnapshot = await getDocs(appointmentsQuery);
-            const appointmentsList = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+
+            const appointmentsList = await Promise.all(
+                querySnapshot.docs.map(async (docSnap) => {
+                    const appointmentData = docSnap.data();
+                    let patientName = "Unknown Patient"; // Default if name isn't found
+
+                    if (appointmentData.patientId) {
+                        const userDocRef = doc(db, "users", appointmentData.patientId);
+                        const userDocSnap = await getDoc(userDocRef);
+                        if (userDocSnap.exists()) {
+                            patientName = userDocSnap.data().fullName || "Unknown Patient";
+                        }
+                    }
+
+                    return {
+                        id: docSnap.id,
+                        ...appointmentData,
+                        patientName,
+                    };
+                })
+            );
+
             setAppointments(appointmentsList);
         } catch (err) {
-            setError('Failed to fetch appointments');
+            setError("Failed to fetch appointments");
             console.error(err);
         } finally {
             setLoading(false);
