@@ -24,8 +24,10 @@ const FloatingChatbot = () => {
     }, [messages]);
 
     const formatResponse = (text) => {
-        // Replace *text* with **text** for bold formatting
-        return text.replace(/\*(.*?)\*/g, '**$1**');
+        return text
+            .replace(/\*\*\*(.*?)\*\*\*/g, '___$1___') // Convert ***text*** to ___text___ (Bold + Italic)
+            .replace(/\*\*(.*?)\*\*/g, '**$1**') // Ensure **text** remains bold
+            .replace(/\*(.*?)\*/g, '*$1*'); // Ensure *text* remains italic
     };
 
     const generateResponse = async (userMessage) => {
@@ -47,12 +49,15 @@ const FloatingChatbot = () => {
             });
 
             const data = await response.json();
-            return formatResponse(data.candidates[0].content.parts[0].text);
+            const rawText = data.candidates[0].content.parts[0].text;
+
+            return formatResponse(rawText); // Apply formatting fix before returning response
         } catch (error) {
             console.error('Error:', error);
             return 'I apologize, but I am having trouble processing your request at the moment.';
         }
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -70,12 +75,7 @@ const FloatingChatbot = () => {
 
     const toggleChat = () => setIsOpen(!isOpen);
 
-    const quickResponses = [
-        { text: 'Book Appointment', message: 'I would like to book an appointment.' },
-        { text: 'Medical Records', message: 'How can I access my medical records?' },
-        { text: 'Symptoms', message: 'I want to discuss my symptoms.' },
-        { text: 'Medications', message: 'Can you explain my medications?' }
-    ];
+
 
     return (
         <div className="fixed bottom-4 right-4 z-50">
@@ -95,9 +95,9 @@ const FloatingChatbot = () => {
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-white overflow-hidden">
                                 <img
-                                    src="/api/placeholder/40/40"
+                                    src="chat.jpg"
                                     alt="AI Assistant"
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full"
                                 />
                             </div>
                             <div className="text-white">
@@ -123,18 +123,16 @@ const FloatingChatbot = () => {
                   ${msg.role === 'user' ? 'bg-blue-600' : 'bg-blue-100'}`}>
                                     <MessageSquare className={`h-5 w-5 ${msg.role === 'user' ? 'text-white' : 'text-blue-600'}`} />
                                 </div>
-                                <div className={`rounded-lg p-4 max-w-[80%] ${
-                                    msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100'
-                                }`}>
+                                <div className={`rounded-lg p-4 max-w-[80%] ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100'
+                                    }`}>
                                     {msg.role === 'assistant' ? (
-                                        <ReactMarkdown
-                                            className={`text-base prose ${msg.role === 'user' ? 'text-white' : 'text-gray-800'}`}
-                                        >
+                                        <ReactMarkdown className="text-base prose text-gray-800">
                                             {msg.content}
                                         </ReactMarkdown>
                                     ) : (
                                         <p className="text-base">{msg.content}</p>
                                     )}
+
                                 </div>
                             </div>
                         ))}
@@ -148,23 +146,7 @@ const FloatingChatbot = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Quick response buttons */}
-                    <div className="p-3 border-t border-gray-200">
-                        <div className="flex flex-wrap gap-2">
-                            {quickResponses.map((response, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => {
-                                        setMessage(response.message);
-                                        handleSubmit({ preventDefault: () => {} });
-                                    }}
-                                    className="text-sm bg-blue-50 text-blue-600 px-4 py-2 rounded-full hover:bg-blue-100 whitespace-nowrap"
-                                >
-                                    {response.text}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+
 
                     {/* Message input */}
                     <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200">
@@ -189,9 +171,8 @@ const FloatingChatbot = () => {
                             </div>
                             <button
                                 type="submit"
-                                className={`p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 ${
-                                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
+                                className={`p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
                                 disabled={isLoading}
                             >
                                 <Send className="h-5 w-5" />
