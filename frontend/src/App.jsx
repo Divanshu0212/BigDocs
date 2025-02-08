@@ -22,7 +22,14 @@ import UploadReport from './pages/UploadReport';
 import ViewPatientReports from './pages/PatientReports';
 import PatientReports from './pages/PatientReports';
 
+import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+
+// Initialize Zego cloud settings
+
+
 const App = () => {
+
+
   return (
     <Router>
       <Header />
