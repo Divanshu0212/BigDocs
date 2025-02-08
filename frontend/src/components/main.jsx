@@ -1,9 +1,32 @@
 import React from "react"
-import {Bell, Calendar, MessageSquare, Heart, Activity, Brain, Search, Menu, X} from 'lucide-react';
-import {Link} from "react-router-dom";
+import { Bell, Calendar, MessageSquare, Heart, Activity, Brain, Search, Menu, X } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { auth } from "../firebase/firebase"; // Import Firebase authentication
+import { signOut, onAuthStateChanged } from "firebase/auth";
 
 export const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(null); // Track user authentication state
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login"); // Redirect to login after logout
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm fixed w-full top-0 z-50">
@@ -12,20 +35,32 @@ export const Header = () => {
           <div className="flex items-center">
             <span className="text-2xl font-bold text-blue-600">BigDocs</span>
           </div>
-          
+
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <a href="#" className="text-gray-600 hover:text-blue-600">Home</a>
             <a href="#" className="text-gray-600 hover:text-blue-600">Services</a>
             <a href="#" className="text-gray-600 hover:text-blue-600">Find Doctors</a>
             <a href="#" className="text-gray-600 hover:text-blue-600">Community</a>
-            <Link to={"/login"}>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Sign In
-              </button>
-            </Link>
 
+            {user ? (
+              // If user is logged in, show Logout button
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                Logout
+              </button>
+            ) : (
+              // If no user, show Sign In button
+              <Link to={"/login"}>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                  Sign In
+                </button>
+              </Link>
+            )}
           </div>
 
+          {/* Mobile Menu Toggle */}
           <div className="md:hidden">
             <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X /> : <Menu />}
@@ -34,6 +69,7 @@ export const Header = () => {
         </div>
       </div>
 
+      {/* Mobile Navigation Menu */}
       {isMenuOpen && (
         <div className="md:hidden bg-white p-4">
           <div className="flex flex-col space-y-4">
@@ -41,9 +77,20 @@ export const Header = () => {
             <a href="#" className="text-gray-600 hover:text-blue-600">Services</a>
             <a href="#" className="text-gray-600 hover:text-blue-600">Find Doctors</a>
             <a href="#" className="text-gray-600 hover:text-blue-600">Community</a>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              Sign In
-            </button>
+
+            {user ? (
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                Logout
+              </button>
+            ) : (
+              <Link to={"/login"}>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                  Sign In
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -52,7 +99,7 @@ export const Header = () => {
 };
 
 export const Hero = () => (
-  <div className="bg-gradient-to-r from-blue-500 to-blue-700 pt-24 pb-16">
+  <div className="bg-gradient-to-r from-blue-600 to-blue-800 pt-24 pb-16">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl">
@@ -80,32 +127,32 @@ export const Features = () => (
         Our Services
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <FeatureCard 
+        <FeatureCard
           icon={<MessageSquare className="h-8 w-8 text-blue-600" />}
           title="24/7 Chat Support"
           description="Connect with healthcare professionals anytime, anywhere through our secure messaging platform."
         />
-        <FeatureCard 
+        <FeatureCard
           icon={<Calendar className="h-8 w-8 text-blue-600" />}
           title="Easy Scheduling"
           description="Book appointments with top doctors and specialists with just a few clicks."
         />
-        <FeatureCard 
+        <FeatureCard
           icon={<Activity className="h-8 w-8 text-blue-600" />}
           title="Health Tracking"
           description="Monitor your vital signs and health metrics with our advanced tracking system."
         />
-        <FeatureCard 
+        <FeatureCard
           icon={<Heart className="h-8 w-8 text-blue-600" />}
           title="Wellness Programs"
           description="Personalized wellness programs designed to help you achieve your health goals."
         />
-        <FeatureCard 
+        <FeatureCard
           icon={<Brain className="h-8 w-8 text-blue-600" />}
           title="Mental Health"
           description="Access mental health resources and connect with professional therapists."
         />
-        <FeatureCard 
+        <FeatureCard
           icon={<Bell className="h-8 w-8 text-blue-600" />}
           title="Medication Reminders"
           description="Never miss a dose with our smart medication reminder system."

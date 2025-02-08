@@ -13,6 +13,7 @@ import {
   Camera
 } from 'lucide-react';
 import { auth } from '../firebase/firebase';
+import { Link } from 'react-router-dom';
 
 const DoctorDashboard = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -44,10 +45,10 @@ const DoctorDashboard = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <QuickActionCard icon={<Calendar />} title="Schedule" description="Manage appointments" />
-          <QuickActionCard icon={<Users />} title="Patients" description="View patient list" />
+          <Link to="/manage-appointments"><QuickActionCard icon={<Calendar />} title="Schedule" description="Manage appointments" /></Link>
+          <Link to="/patient-list"><QuickActionCard icon={<Users />} title="Patients" description="View patient list" /></Link>
           <QuickActionCard icon={<Video />} title="Video Calls" description="Start consultations" />
-          <QuickActionCard icon={<FileText />} title="Reports" description="View medical reports" />
+          <Link to="/upload-reports"><QuickActionCard icon={<FileText />} title="Reports" description="View medical reports" /></Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

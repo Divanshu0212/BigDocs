@@ -16,10 +16,16 @@ import DoctorAppointmentBooking from './pages/DoctorAppointmentBooking';
 import DoctorDashboard from './pages/DoctorDashboard';
 import SymptomChecker from './pages/SymptomChecker';
 import DoctorMedicationEditor from './pages/DoctorMedicationsEditor';
+import { Header } from './components/main';
+import PatientList from './pages/PatientList';
+import UploadReport from './pages/UploadReport';
+import ViewPatientReports from './pages/PatientReports';
+import PatientReports from './pages/PatientReports';
 
 const App = () => {
   return (
     <Router>
+      <Header />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/doctors" element={<DoctorListingPage />} />
@@ -32,9 +38,11 @@ const App = () => {
         <Route path="/book-appointment" element={<PatientAppointmentBooking />} />
         <Route path="/manage-appointments" element={<DoctorAppointmentBooking />} />
         <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-        <Route path="/symptom" element={<SymptomChecker/>}/>
-        <Route path="/medications" element={<DoctorMedicationEditor/>}/>
-        
+        <Route path="/symptom" element={<SymptomChecker />} />
+        <Route path="/medications" element={<DoctorMedicationEditor />} />
+        <Route path="/patient-list" element={<PatientList />} />
+        <Route path="/upload-reports" element={<UploadReport />} />
+        <Route path="/patientreports/:patientId" element={<PatientReports />} />
       </Routes>
     </Router>
   );

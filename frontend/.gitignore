@@ -21,6 +21,7 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+*.env
 
 # Ignore Firebase config file
 /BIGDOCS/frontend/src/firebase/firebase.js

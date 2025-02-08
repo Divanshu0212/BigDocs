@@ -11,11 +11,13 @@ const PatientDashboard = () => {
     const [medications, setMedications] = useState([]);
     const [loadingAppointments, setLoadingAppointments] = useState(true);
     const [loadingMedications, setLoadingMedications] = useState(true);
+    const [userId, setUserId] = useState("");
 
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
+                setUserId(user.uid);
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists()) {
@@ -107,16 +109,13 @@ const PatientDashboard = () => {
                         title="Message Doctor"
                         description="Connect with your doctor"
                     />
-                    <QuickActionCard
-                        icon={<FileText className="h-6 w-6 text-blue-600" />}
-                        title="View Records"
-                        description="Access your health records"
-                    />
-                    <QuickActionCard
-                        icon={<Pill className="h-6 w-6 text-blue-600" />}
-                        title="Medications"
-                        description="View your prescriptions"
-                    />
+                    <Link to={`/patientreports/${userId}`}>
+                        <QuickActionCard
+                            icon={<FileText className="h-6 w-6 text-blue-600" />}
+                            title="View Records"
+                            description="Access your health records"
+                        />
+                    </Link>
                 </div>
 
                 {/* Main Dashboard Content */}

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebase/firebase';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail, onAuthStateChanged } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -14,14 +14,29 @@ const Login = () => {
     const [resetEmail, setResetEmail] = useState('');
     const navigate = useNavigate();
 
+    useEffect(() => {
+        // Check if a user is already signed in
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await handleNavigation(user);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     const handleNavigation = async (user) => {
-        // Get user role from Firestore
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            navigate(userData.role === 'doctor' ? '/doctor-dashboard' : '/patient-dashboard');
-        } else {
-            setError('User role not found. Please contact support.');
+        try {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                navigate(userData.role === 'doctor' ? '/doctor-dashboard' : '/patient-dashboard');
+            } else {
+                setError('User role not found. Please contact support.');
+            }
+        } catch (err) {
+            console.error('Error fetching user role:', err);
+            setError('An error occurred while fetching user data.');
         }
     };
 
@@ -44,29 +59,28 @@ const Login = () => {
         const provider = new GoogleAuthProvider();
         try {
             const result = await signInWithPopup(auth, provider);
-            await handleNavigation(result.user);
+            const user = result.user;
+
+            // Reference to the Firestore user document
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+
+            if (!userDoc.exists()) {
+                // If the user doesn't exist, create a new record with a default role of "patient"
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    role: 'patient',  // Default role
+                    name: user.displayName || '',
+                    createdAt: new Date()
+                });
+            }
+
+            await handleNavigation(user);
         } catch (err) {
             setError('Failed to sign in with Google.');
             console.error(err);
         }
-    };
-
-    const handleForgotPassword = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        setSuccessMessage('');
-
-        try {
-            await sendPasswordResetEmail(auth, resetEmail);
-            setSuccessMessage('Password reset email sent! Please check your inbox.');
-            setIsResetModalOpen(false);
-            setResetEmail('');
-        } catch (err) {
-            setError('Failed to send reset email. Please check the email address.');
-            console.error(err);
-        }
-        setLoading(false);
     };
 
 
@@ -172,45 +186,6 @@ const Login = () => {
                     </p>
                 </div>
             </div>
-
-            {/* Password Reset Modal */}
-            {isResetModalOpen && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Reset Password</h3>
-                        <form onSubmit={handleForgotPassword}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email address
-                                </label>
-                                <input
-                                    type="email"
-                                    required
-                                    value={resetEmail}
-                                    onChange={(e) => setResetEmail(e.target.value)}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsResetModalOpen(false)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50"
-                                >
-                                    {loading ? 'Sending...' : 'Send Reset Link'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

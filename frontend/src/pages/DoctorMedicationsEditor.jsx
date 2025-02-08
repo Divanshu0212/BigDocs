@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase/firebase.js";
-import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 const DoctorMedicationsEditor = () => {
@@ -10,19 +11,18 @@ const DoctorMedicationsEditor = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [newMedication, setNewMedication] = useState({ name: "", dosage: "", frequency: "" });
-
-    // Fetch patients who have booked a consultation with the logged-in doctor
+    const [editingMedication, setEditingMedication] = useState(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                fetchPatients(user.uid); // Pass the doctor ID when the user is authenticated
+                fetchPatients(user.uid);
             } else {
                 setError("User not authenticated.");
             }
         });
 
-        return () => unsubscribe(); // Cleanup listener on unmount
+        return () => unsubscribe();
     }, []);
 
     const fetchPatients = async (doctorId) => {
@@ -42,7 +42,7 @@ const DoctorMedicationsEditor = () => {
 
             const usersQuery = query(
                 collection(db, "users"),
-                where("__name__", "in", patientIds) // Firestore uses document ID
+                where("__name__", "in", patientIds)
             );
 
             const usersSnapshot = await getDocs(usersQuery);
@@ -58,8 +58,6 @@ const DoctorMedicationsEditor = () => {
         }
     };
 
-
-    // Fetch medications for the selected patient
     useEffect(() => {
         if (!selectedPatient) return;
 
@@ -90,7 +88,6 @@ const DoctorMedicationsEditor = () => {
         fetchMedications();
     }, [selectedPatient]);
 
-    // Handle adding a new medication
     const handleAddMedication = async (e) => {
         e.preventDefault();
         if (!selectedPatient || !newMedication.name || !newMedication.dosage || !newMedication.frequency) {
@@ -111,6 +108,37 @@ const DoctorMedicationsEditor = () => {
             setError("");
         } catch (err) {
             setError("Failed to add medication");
+            console.error(err);
+        }
+    };
+
+    const handleUpdateMedication = async (e) => {
+        e.preventDefault();
+        if (!editingMedication) return;
+
+        try {
+            const medDocRef = doc(db, "medications", editingMedication.id);
+            await updateDoc(medDocRef, {
+                name: editingMedication.name,
+                dosage: editingMedication.dosage,
+                frequency: editingMedication.frequency
+            });
+
+            setMedications(medications.map(med => med.id === editingMedication.id ? editingMedication : med));
+            setEditingMedication(null);
+            setError("");
+        } catch (err) {
+            setError("Failed to update medication");
+            console.error(err);
+        }
+    };
+
+    const handleDeleteMedication = async (medId) => {
+        try {
+            await deleteDoc(doc(db, "medications", medId));
+            setMedications(medications.filter(med => med.id !== medId));
+        } catch (err) {
+            setError("Failed to delete medication");
             console.error(err);
         }
     };
@@ -141,38 +169,44 @@ const DoctorMedicationsEditor = () => {
                 </div>
 
                 {selectedPatient && (
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-lg font-semibold mb-4">
-                            Prescribed Medications for {selectedPatient.fullName}
-                        </h2>
-                        {loading ? (
-                            <p>Loading medications...</p>
-                        ) : medications.length === 0 ? (
-                            <p className="text-gray-600">No medications prescribed yet.</p>
-                        ) : (
-                            <ul className="space-y-4">
-                                {medications.map((med) => (
-                                    <li key={med.id} className="border p-4 rounded-lg">
-                                        <p className="font-semibold">{med.name}</p>
-                                        <p>Dosage: {med.dosage}</p>
-                                        <p>Frequency: {med.frequency}</p>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-                )}
+                    <>
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <h2 className="text-lg font-semibold mb-4">
+                                Prescribed Medications for {selectedPatient.fullName}
+                            </h2>
+                            {loading ? (
+                                <p>Loading medications...</p>
+                            ) : medications.length === 0 ? (
+                                <p className="text-gray-600">No medications prescribed yet.</p>
+                            ) : (
+                                <ul className="space-y-4">
+                                    {medications.map((med) => (
+                                        <li key={med.id} className="border p-4 rounded-lg flex justify-between">
+                                            <div>
+                                                <p className="font-semibold">{med.name}</p>
+                                                <p>Dosage: {med.dosage}</p>
+                                                <p>Frequency: {med.frequency}</p>
+                                            </div>
+                                            <div>
+                                                <button onClick={() => setEditingMedication(med)} className="text-blue-500">Edit</button>
+                                                <button onClick={() => handleDeleteMedication(med.id)} className="text-red-500 ml-2">Delete</button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
 
-                {selectedPatient && (
-                    <div className="bg-white p-6 rounded-lg shadow-md mt-6">
-                        <h2 className="text-lg font-semibold mb-4">Add New Medication</h2>
-                        <form onSubmit={handleAddMedication} className="space-y-4">
-                            <input type="text" placeholder="Medication Name" value={newMedication.name} onChange={(e) => setNewMedication({ ...newMedication, name: e.target.value })} className="w-full p-2 border rounded" required />
-                            <input type="text" placeholder="Dosage (e.g., 500mg)" value={newMedication.dosage} onChange={(e) => setNewMedication({ ...newMedication, dosage: e.target.value })} className="w-full p-2 border rounded" required />
-                            <input type="text" placeholder="Frequency (e.g., 2 times a day)" value={newMedication.frequency} onChange={(e) => setNewMedication({ ...newMedication, frequency: e.target.value })} className="w-full p-2 border rounded" required />
-                            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Add Medication</button>
-                        </form>
-                    </div>
+                        <div className="bg-white p-6 rounded-lg shadow-md mt-6">
+                            <h2 className="text-lg font-semibold mb-4">{editingMedication ? "Edit Medication" : "Add New Medication"}</h2>
+                            <form onSubmit={editingMedication ? handleUpdateMedication : handleAddMedication} className="space-y-4">
+                                <input type="text" placeholder="Medication Name" value={editingMedication ? editingMedication.name : newMedication.name} onChange={(e) => editingMedication ? setEditingMedication({ ...editingMedication, name: e.target.value }) : setNewMedication({ ...newMedication, name: e.target.value })} className="w-full p-2 border rounded" required />
+                                <input type="text" placeholder="Dosage (e.g., 500mg)" value={editingMedication ? editingMedication.dosage : newMedication.dosage} onChange={(e) => editingMedication ? setEditingMedication({ ...editingMedication, dosage: e.target.value }) : setNewMedication({ ...newMedication, dosage: e.target.value })} className="w-full p-2 border rounded" required />
+                                <input type="text" placeholder="Frequency (e.g., 2 times a day)" value={editingMedication ? editingMedication.frequency : newMedication.frequency} onChange={(e) => editingMedication ? setEditingMedication({ ...editingMedication, frequency: e.target.value }) : setNewMedication({ ...newMedication, frequency: e.target.value })} className="w-full p-2 border rounded" required />
+                                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">{editingMedication ? "Update" : "Add"}</button>
+                            </form>
+                        </div>
+                    </>
                 )}
             </div>
         </div>
