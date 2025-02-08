@@ -20,6 +20,7 @@ import PatientList from './pages/PatientList';
 import UploadReport from './pages/UploadReport';
 import ViewPatientReports from './pages/PatientReports';
 import PatientReports from './pages/PatientReports';
+import MessageDoctor from './pages/MessageDoctor';
 
 
 
@@ -46,6 +47,7 @@ const App = () => {
         <Route path="/patient-list" element={<PatientList />} />
         <Route path="/upload-reports" element={<UploadReport />} />
         <Route path="/patientreports/:patientId" element={<PatientReports />} />
+        <Route path="/contact" element={<MessageDoctor/>}/>
       </Routes>
     </Router>
   );

@@ -52,13 +52,19 @@ const PatientDashboard = () => {
                 id: doc.id,
                 ...doc.data()
             }));
-            setAppointments(appointmentsList);
+
+            // Sort by date (assuming 'date' is stored in YYYY-MM-DD format)
+            const sortedAppointments = appointmentsList.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // Get only the top 5 upcoming appointments
+            setAppointments(sortedAppointments.slice(0, 5));
         } catch (err) {
             console.error("Error fetching appointments:", err);
         } finally {
             setLoadingAppointments(false);
         }
     };
+
 
     const fetchMedications = async (userId) => {
         setLoadingMedications(true);
@@ -106,11 +112,13 @@ const PatientDashboard = () => {
                             description="Schedule your next visit"
                         />
                     </Link>
-                    <QuickActionCard
-                        icon={<MessageSquare className="h-6 w-6 text-blue-600" />}
-                        title="Message Doctor"
-                        description="Connect with your doctor"
-                    />
+                    <Link to="/contact">
+                        <QuickActionCard
+                            icon={<MessageSquare className="h-6 w-6 text-blue-600" />}
+                            title="Contact Doctor"
+                            description="Connect with your doctor"
+                        />
+                    </Link>
                     <Link to={`/patientreports/${userId}`}>
                         <QuickActionCard
                             icon={<FileText className="h-6 w-6 text-blue-600" />}
@@ -221,7 +229,7 @@ const AppointmentCard = ({ doctor, specialty, date, time, type, status }) => {
                     <span className="text-sm text-gray-600">{date} at {time}</span>
                 </div>
             </div>
-            
+
             <div className="flex flex-col items-end">
                 <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
                     Online
