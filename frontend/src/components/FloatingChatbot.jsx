@@ -25,9 +25,9 @@ const FloatingChatbot = () => {
 
     const formatResponse = (text) => {
         return text
-            .replace(/\*\*\*(.*?)\*\*\*/g, '___$1___') // Convert ***text*** to ___text___ (Bold + Italic)
-            .replace(/\*\*(.*?)\*\*/g, '**$1**') // Ensure **text** remains bold
-            .replace(/\*(.*?)\*/g, '*$1*'); // Ensure *text* remains italic
+            .replace(/\*\*\*(.*?)\*\*\*/g, '___$1___')
+            .replace(/\*\*(.*?)\*\*/g, '**$1**')
+            .replace(/\*(.*?)\*/g, '*$1*');
     };
 
     const generateResponse = async (userMessage) => {
@@ -51,7 +51,7 @@ const FloatingChatbot = () => {
             const data = await response.json();
             const rawText = data.candidates[0].content.parts[0].text;
 
-            return formatResponse(rawText); // Apply formatting fix before returning response
+            return formatResponse(rawText);
         } catch (error) {
             console.error('Error:', error);
             return 'I apologize, but I am having trouble processing your request at the moment.';
@@ -90,7 +90,6 @@ const FloatingChatbot = () => {
 
             {isOpen && (
                 <div className="w-96 h-[32rem] bg-white rounded-lg shadow-xl flex flex-col">
-                    {/* Chat header */}
                     <div className="bg-blue-600 p-4 rounded-t-lg flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-white overflow-hidden">
