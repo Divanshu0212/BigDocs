@@ -30,7 +30,7 @@ const App = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/doctors" element={<DoctorListingPage />} />
         <Route path="/patient-dashboard" element={<PatientDashboard />} />
-        <Route path="/telemedicine" element={<TelemedicineInterface />} />
+        <Route path="/telemedicine/:roomID" element={<TelemedicineInterface />} />
         <Route path="/community" element={<CommunityForum />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />

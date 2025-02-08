@@ -1,25 +1,22 @@
-import React, { useRef, useEffect } from 'react';
-import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
+import React from "react";
+import { useParams } from "react-router-dom";
+
+import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 
 const TelemedicineInterface = () => {
-  const myMeeting = useRef();
-
-  const myMeetingUI = async (element) => {
-    // Generate Kit Token
-    const appID = 1953089849;  // Type: Number
-    const serverSecret = "30eccf6a89ad0e33dbf5dbdfbd8b01bc"; // Type: String
+  const { roomID } = useParams();
+  const meeting = async (element) => {
+    const appID = 1226140493;
+    const serverSecret = "e3470640a32e89cc25ad305995f1cf8a";
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
-      "room-1",  // Room ID
-      Date.now().toString(),  // User ID
-      "Doctor"  // User Name
+      roomID,
+      Date.now().toString(),
+      "Manasvi Kweera"
     );
-
-    // Create instance object from Kit Token
     const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-    // Start the call
     zp.joinRoom({
       container: element,
       sharedLinks: [{
@@ -35,21 +32,7 @@ const TelemedicineInterface = () => {
     });
   };
 
-  useEffect(() => {
-    if (myMeeting.current) {
-      myMeetingUI(myMeeting.current);
-    }
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gray-900">
-      <div 
-        className="h-screen"
-        ref={myMeeting}
-        style={{ width: '100%', height: '100vh' }}
-      />
-    </div>
-  );
+  return <div ref={meeting} style={{ width: "100vw", height: "100vh" }}></div>;
 };
 
 export default TelemedicineInterface;
