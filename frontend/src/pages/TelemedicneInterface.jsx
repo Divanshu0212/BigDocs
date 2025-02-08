@@ -25,8 +25,10 @@ const TelemedicineInterface = () => {
   useEffect(() => {
     const initMeeting = async (element) => {
       try {
-        const appID = 1226140493;
-        const serverSecret = "e3470640a32e89cc25ad305995f1cf8a";
+        const appID = Number(import.meta.env.VITE_ZEGOCLOUD_APP_ID);
+        const serverSecret = import.meta.env.VITE_ZEGOCLOUD_SERVER_SECRET;
+
+
 
         // Generate a more reliable user ID
         const userID = Math.floor(Math.random() * 10000).toString();
@@ -37,7 +39,7 @@ const TelemedicineInterface = () => {
           serverSecret,
           roomID,
           userID,
-          "Manasvi Kweera",
+          "Your Name",
           7200 // Token expiry time in seconds (2 hours)
         );
 
@@ -134,7 +136,7 @@ const TelemedicineInterface = () => {
     return () => unsubscribe();
   }, [roomID, navigate]);
 
-  
+
 
   if (error) {
     return (

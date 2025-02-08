@@ -67,7 +67,7 @@ export const Header = () => {
             <button onClick={handleHomeClick} className="text-gray-600 hover:text-blue-600">
               Home
             </button>
-            <Link to="/services" className="text-gray-600 hover:text-blue-600">Services</Link>
+            <Link to="/symptom" className="text-gray-600 hover:text-blue-600">AI Symptom Checker</Link>
             <Link to="/find-doctors" className="text-gray-600 hover:text-blue-600">Find Doctors</Link>
             <Link to="/community" className="text-gray-600 hover:text-blue-600">Community</Link>
 
