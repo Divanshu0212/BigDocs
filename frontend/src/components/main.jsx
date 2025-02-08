@@ -1,19 +1,33 @@
-import React from "react"
+import React, { useState, useEffect } from "react";
 import { Bell, Calendar, MessageSquare, Heart, Activity, Brain, Search, Menu, X } from 'lucide-react';
-import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../firebase/firebase"; // Import Firebase authentication
+import { auth,db } from "../firebase/firebase"; // Import Firebase authentication
 import { signOut, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null); // Track user authentication state
+  const [role, setRole] = useState(null); // Track user role
   const navigate = useNavigate();
 
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        
+        // Fetch user role from Firestore
+        const userRef = doc(db, "users", currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          setRole(userSnap.data().role); // Assuming 'role' field is stored in Firestore
+        }
+      } else {
+        setUser(null);
+        setRole(null);
+      }
     });
 
     return () => unsubscribe(); // Cleanup listener on unmount
@@ -22,9 +36,21 @@ export const Header = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate("/login"); // Redirect to login after logout
+      navigate("/"); // Redirect to home after logout
     } catch (error) {
       console.error("Logout failed:", error);
+    }
+  };
+
+  const handleHomeClick = () => {
+    if (!user) {
+      navigate("/login");
+    } else if (role === "doctor") {
+      navigate("/doctor-dashboard");
+    } else if (role === "patient") {
+      navigate("/patient-dashboard");
+    } else {
+      navigate("/"); // Fallback
     }
   };
 
@@ -38,21 +64,21 @@ export const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#" className="text-gray-600 hover:text-blue-600">Home</a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">Services</a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">Find Doctors</a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">Community</a>
+            <button onClick={handleHomeClick} className="text-gray-600 hover:text-blue-600">
+              Home
+            </button>
+            <Link to="/services" className="text-gray-600 hover:text-blue-600">Services</Link>
+            <Link to="/find-doctors" className="text-gray-600 hover:text-blue-600">Find Doctors</Link>
+            <Link to="/community" className="text-gray-600 hover:text-blue-600">Community</Link>
 
             {user ? (
-              // If user is logged in, show Logout button
               <button
                 onClick={handleLogout}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
                 Logout
               </button>
             ) : (
-              // If no user, show Sign In button
-              <Link to={"/login"}>
+              <Link to="/login">
                 <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                   Sign In
                 </button>
@@ -73,10 +99,12 @@ export const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-white p-4">
           <div className="flex flex-col space-y-4">
-            <a href="#" className="text-gray-600 hover:text-blue-600">Home</a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">Services</a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">Find Doctors</a>
-            <a href="#" className="text-gray-600 hover:text-blue-600">Community</a>
+            <button onClick={handleHomeClick} className="text-gray-600 hover:text-blue-600">
+              Home
+            </button>
+            <Link to="/services" className="text-gray-600 hover:text-blue-600">Services</Link>
+            <Link to="/find-doctors" className="text-gray-600 hover:text-blue-600">Find Doctors</Link>
+            <Link to="/community" className="text-gray-600 hover:text-blue-600">Community</Link>
 
             {user ? (
               <button
@@ -85,7 +113,7 @@ export const Header = () => {
                 Logout
               </button>
             ) : (
-              <Link to={"/login"}>
+              <Link to="/login">
                 <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                   Sign In
                 </button>
@@ -97,6 +125,7 @@ export const Header = () => {
     </header>
   );
 };
+
 
 export const Hero = () => (
   <div className="bg-gradient-to-r from-blue-600 to-blue-800 pt-24 pb-16">
