@@ -8,6 +8,7 @@ import {
   FileText,
   Check,
   X,
+  Pill,
 } from "lucide-react";
 import { auth, db } from "../firebase/firebase";
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
@@ -101,7 +102,7 @@ const DoctorDashboard = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Link to="/manage-appointments">
             <QuickActionCard icon={<Calendar />} title="Schedule" description="Manage appointments" />
           </Link>
@@ -111,6 +112,9 @@ const DoctorDashboard = () => {
           <QuickActionCard icon={<Video />} title="Video Calls" description="Start consultations" />
           <Link to="/upload-reports">
             <QuickActionCard icon={<FileText />} title="Reports" description="View medical reports" />
+          </Link>
+          <Link to="/medications">
+            <QuickActionCard icon={<Pill/>} title="Edit Medications" description="Manage prescriptions" />
           </Link>
         </div>
 
