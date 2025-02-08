@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Bell, Calendar, MessageSquare, Heart, Activity, Brain, Search, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
-import { auth,db } from "../firebase/firebase"; // Import Firebase authentication
+import { auth, db } from "../firebase/firebase"; // Import Firebase authentication
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -16,11 +16,11 @@ export const Header = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        
+
         // Fetch user role from Firestore
         const userRef = doc(db, "users", currentUser.uid);
         const userSnap = await getDoc(userRef);
-        
+
         if (userSnap.exists()) {
           setRole(userSnap.data().role); // Assuming 'role' field is stored in Firestore
         }
@@ -128,7 +128,14 @@ export const Header = () => {
 
 
 export const Hero = () => (
-  <div className="bg-gradient-to-r from-blue-600 to-blue-800 pt-24 pb-16">
+  <div className="pt-50 h-full pb-16"
+    style={{
+      backgroundImage: `url('/hero-image.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }}
+  >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-white sm:text-5xl md:text-6xl">

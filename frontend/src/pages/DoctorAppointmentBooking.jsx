@@ -3,6 +3,7 @@ import { db, auth } from '../firebase/firebase';
 import { collection, getDocs, query, where, updateDoc, doc, addDoc, getDoc } from 'firebase/firestore';
 import { Calendar, Clock, User, Check, X } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
+import { Link } from 'react-router-dom';
 
 const DoctorAppointmentBooking = () => {
     const [appointments, setAppointments] = useState([]);
@@ -83,9 +84,15 @@ const DoctorAppointmentBooking = () => {
         }
 
         try {
+            // Generate a unique room ID if the appointment is being approved
+            const roomId = status === 'approved' ?
+                `${appointmentId}-${Math.random().toString(36).substr(2, 9)}` :
+                null;
+
             await updateDoc(doc(db, 'appointments', appointmentId), {
                 status: status,
-                updatedAt: new Date().toISOString()
+                updatedAt: new Date().toISOString(),
+                roomId: roomId // Add the room ID to the appointment document
             });
 
             setSuccessMessage(`Appointment ${status === 'approved' ? 'approved' : 'rejected'} successfully`);
@@ -218,6 +225,14 @@ const DoctorAppointmentBooking = () => {
                                             Reject
                                         </button>
                                     </div>
+                                )}
+                                {appointment.status === 'approved' && appointment.roomId && (
+                                    <Link
+                                        to={`/telemedicine/${appointment.roomId}`}
+                                        className="mt-4 block w-full text-center py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                    >
+                                        Join Video Call
+                                    </Link>
                                 )}
                             </div>
                         ))}
