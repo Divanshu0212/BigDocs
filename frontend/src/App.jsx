@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { Activity, Users, MessageSquare, UserCircle } from 'lucide-react';
 import React from 'react';
 
-// Import all pages
 import Landing from './pages/LandingPage';
 import DoctorListingPage from './pages/DoctorListingPage';
 import PatientDashboard from './pages/PatientDashboard';
@@ -22,13 +21,10 @@ import UploadReport from './pages/UploadReport';
 import ViewPatientReports from './pages/PatientReports';
 import PatientReports from './pages/PatientReports';
 
-import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 
-// Initialize Zego cloud settings
 
 
 const App = () => {
-
 
   return (
     <Router>

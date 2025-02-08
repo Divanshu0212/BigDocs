@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firesto
 import { Calendar, Clock, Activity, Heart, Bell, Pill, FileText, MessageSquare } from 'lucide-react';
 import { auth, db } from '../firebase/firebase'; // Ensure db is imported for Firestore
 import { Link } from 'react-router-dom';
+import FloatingChatbot from "../components/FloatingChatbot.jsx";
 
 const PatientDashboard = () => {
     const [name, setName] = useState("");
@@ -89,8 +90,9 @@ const PatientDashboard = () => {
                         <h1 className="text-2xl font-bold text-gray-900">Welcome back, {name}!</h1>
                         <p className="text-gray-600">Here's your health summary</p>
                     </div>
-                    <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                        <Bell className="h-5 w-5" />
+                    <button
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <Bell className="h-5 w-5"/>
                         <span className="hidden md:inline">Notifications</span>
                     </button>
                 </div>
@@ -99,19 +101,19 @@ const PatientDashboard = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <Link to='/patientappointmentbooking'>
                         <QuickActionCard
-                            icon={<Calendar className="h-6 w-6 text-blue-600" />}
+                            icon={<Calendar className="h-6 w-6 text-blue-600"/>}
                             title="Book Appointment"
                             description="Schedule your next visit"
                         />
                     </Link>
                     <QuickActionCard
-                        icon={<MessageSquare className="h-6 w-6 text-blue-600" />}
+                        icon={<MessageSquare className="h-6 w-6 text-blue-600"/>}
                         title="Message Doctor"
                         description="Connect with your doctor"
                     />
                     <Link to={`/patientreports/${userId}`}>
                         <QuickActionCard
-                            icon={<FileText className="h-6 w-6 text-blue-600" />}
+                            icon={<FileText className="h-6 w-6 text-blue-600"/>}
                             title="View Records"
                             description="Access your health records"
                         />
@@ -150,13 +152,13 @@ const PatientDashboard = () => {
                         <h2 className="text-xl font-semibold mb-4">Health Metrics</h2>
                         <div className="space-y-6">
                             <HealthMetric
-                                icon={<Heart className="h-5 w-5 text-red-500" />}
+                                icon={<Heart className="h-5 w-5 text-red-500"/>}
                                 title="Heart Rate"
                                 value="72 bpm"
                                 trend="+2 from yesterday"
                             />
                             <HealthMetric
-                                icon={<Activity className="h-5 w-5 text-green-500" />}
+                                icon={<Activity className="h-5 w-5 text-green-500"/>}
                                 title="Daily Steps"
                                 value="8,453"
                                 trend="2,000 to goal"
@@ -174,18 +176,24 @@ const PatientDashboard = () => {
                         ) : (
                             <div className="space-y-4">
                                 {medications.map((med) => (
-                                    <MedicationCard key={med.id} name={med.name} dosage={med.dosage} time={med.frequency || "Not specified"} status="upcoming" />
+                                    <MedicationCard key={med.id} name={med.name} dosage={med.dosage}
+                                                    time={med.frequency || "Not specified"} status="upcoming"/>
                                 ))}
                             </div>
                         )}
                     </div>
+                </div>
+
+                <div className="min-h-screen bg-gray-50 pt-16">
+                    {/* Your existing content */}
+                    <FloatingChatbot/>
                 </div>
             </div>
         </div>
     );
 };
 
-const QuickActionCard = ({ icon, title, description }) => (
+const QuickActionCard = ({icon, title, description}) => (
     <div className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer">
         <div className="flex flex-col items-center text-center">
             {icon}
