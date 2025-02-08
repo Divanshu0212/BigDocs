@@ -10,6 +10,7 @@ import {
   doc,
   serverTimestamp,
 } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 const UploadReport = () => {
   const [file, setFile] = useState(null);
@@ -23,26 +24,29 @@ const UploadReport = () => {
   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   useEffect(() => {
-    const fetchPatients = async () => {
-      if (!auth.currentUser) return;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchPatients(user.uid);
+      }
+    });
 
-      const doctorId = auth.currentUser.uid;
-      const q = query(collection(db, "appointments"), where("doctorId", "==", doctorId));
-      const querySnapshot = await getDocs(q);
-
-      const patientList = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (!patientList.some((p) => p.id === data.patientId)) {
-          patientList.push({ id: data.patientId, name: data.patientName });
-        }
-      });
-
-      setPatients(patientList);
-    };
-
-    fetchPatients();
+    return () => unsubscribe();
   }, []);
+
+  const fetchPatients = async (doctorId) => {
+    const q = query(collection(db, "appointments"), where("doctorId", "==", doctorId));
+    const querySnapshot = await getDocs(q);
+
+    const patientList = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (!patientList.some((p) => p.id === data.patientId)) {
+        patientList.push({ id: data.patientId, name: data.patientName });
+      }
+    });
+
+    setPatients(patientList);
+  };
 
   useEffect(() => {
     if (selectedPatient) {
@@ -110,15 +114,6 @@ const UploadReport = () => {
     if (!window.confirm("Are you sure you want to delete this report?")) return;
 
     try {
-      // Delete from Cloudinary
-      await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/delete_by_token`,
-        {
-          method: "POST",
-          body: JSON.stringify({ token: cloudinaryPublicId }),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
 
       // Delete from Firestore
       await deleteDoc(doc(db, "reports", reportId));

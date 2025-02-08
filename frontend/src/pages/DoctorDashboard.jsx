@@ -1,33 +1,88 @@
-import React, { useState } from 'react';
-import { 
-  Calendar, 
-  Clock, 
-  Activity, 
-  Users, 
-  Video, 
-  Bell, 
-  FileText, 
-  MessageSquare,
+import React, { useState, useEffect } from "react";
+import {
+  Calendar,
+  Clock,
+  Users,
+  Video,
+  Bell,
+  FileText,
   Check,
   X,
-  Camera
-} from 'lucide-react';
-import { auth } from '../firebase/firebase';
-import { Link } from 'react-router-dom';
+} from "lucide-react";
+import { auth, db } from "../firebase/firebase";
+import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { Link } from "react-router-dom";
 
 const DoctorDashboard = () => {
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [pendingAppointments, setPendingAppointments] = useState([]);
+  const [todayAppointments, setTodayAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
-  const handleAcceptAppointment = (appointmentId) => {
-    console.log('Appointment accepted:', appointmentId);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        fetchAppointments(currentUser.uid);
+      } else {
+        setUser(null);
+        setPendingAppointments([]);
+        setTodayAppointments([]);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const fetchAppointments = async (doctorId) => {
+    setLoading(true);
+    const today = new Date().toISOString().split("T")[0];
+
+    try {
+      const q = query(collection(db, "appointments"), where("doctorId", "==", doctorId));
+      const querySnapshot = await getDocs(q);
+
+      const pending = [];
+      const todayList = [];
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.status === "pending") {
+          pending.push({ id: doc.id, ...data });
+        } else if (data.date === today) {
+          todayList.push({ id: doc.id, ...data });
+        }
+      });
+
+      setPendingAppointments(pending);
+      setTodayAppointments(todayList);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    }
+
+    setLoading(false);
   };
 
-  const handleRejectAppointment = (appointmentId) => {
-    console.log('Appointment rejected:', appointmentId);
+  const handleAcceptAppointment = async (appointmentId) => {
+    try {
+      await updateDoc(doc(db, "appointments", appointmentId), { status: "confirmed" });
+      setPendingAppointments((prev) => prev.filter((app) => app.id !== appointmentId));
+      alert("Appointment Accepted!");
+    } catch (error) {
+      console.error("Error accepting appointment:", error);
+    }
   };
 
-  const startVideoCall = (patientId) => {
-    console.log('Starting video call with patient:', patientId);
+  const handleRejectAppointment = async (appointmentId) => {
+    try {
+      await updateDoc(doc(db, "appointments", appointmentId), { status: "rejected" });
+      setPendingAppointments((prev) => prev.filter((app) => app.id !== appointmentId));
+      alert("Appointment Rejected!");
+    } catch (error) {
+      console.error("Error rejecting appointment:", error);
+    }
   };
 
   return (
@@ -35,7 +90,9 @@ const DoctorDashboard = () => {
       <div className="max-w-7xl mx-auto py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Welcome, Dr. {auth.currentUser?.displayName}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Welcome, Dr. {user?.displayName}
+            </h1>
             <p className="text-gray-600">Your patient dashboard</p>
           </div>
           <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
@@ -45,28 +102,80 @@ const DoctorDashboard = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Link to="/manage-appointments"><QuickActionCard icon={<Calendar />} title="Schedule" description="Manage appointments" /></Link>
-          <Link to="/patient-list"><QuickActionCard icon={<Users />} title="Patients" description="View patient list" /></Link>
+          <Link to="/manage-appointments">
+            <QuickActionCard icon={<Calendar />} title="Schedule" description="Manage appointments" />
+          </Link>
+          <Link to="/patient-list">
+            <QuickActionCard icon={<Users />} title="Patients" description="View patient list" />
+          </Link>
           <QuickActionCard icon={<Video />} title="Video Calls" description="Start consultations" />
-          <Link to="/upload-reports"><QuickActionCard icon={<FileText />} title="Reports" description="View medical reports" /></Link>
+          <Link to="/upload-reports">
+            <QuickActionCard icon={<FileText />} title="Reports" description="View medical reports" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DashboardCard title="Pending Appointments">
-            <PendingAppointment id="1" patient="Sarah Smith" age="34" reason="Follow-up consultation" preferredDate="2025-02-08" preferredTime="10:00 AM" onAccept={handleAcceptAppointment} onReject={handleRejectAppointment} />
-            <PendingAppointment id="2" patient="John Doe" age="45" reason="Annual checkup" preferredDate="2025-02-09" preferredTime="2:30 PM" onAccept={handleAcceptAppointment} onReject={handleRejectAppointment} />
+            {loading ? (
+              <p>Loading...</p>
+            ) : pendingAppointments.length === 0 ? (
+              <p>No pending appointments</p>
+            ) : (
+              pendingAppointments.map((appointment) => (
+                <PendingAppointment
+                  key={appointment.id}
+                  id={appointment.id}
+                  patient={appointment.patientName}
+                  age={appointment.patientAge}
+                  reason={appointment.reason}
+                  preferredDate={appointment.date}
+                  preferredTime={appointment.time}
+                  onAccept={handleAcceptAppointment}
+                  onReject={handleRejectAppointment}
+                />
+              ))
+            )}
           </DashboardCard>
 
           <DashboardCard title="Today's Schedule">
-            <TodayAppointment patient="Michael Brown" time="9:00 AM" type="Video Call" status="Completed" />
-            <TodayAppointment patient="Emily Johnson" time="11:30 AM" type="In-Person" status="In Progress" />
-            <TodayAppointment patient="David Wilson" time="2:00 PM" type="Video Call" status="Upcoming" onStartCall={() => startVideoCall("david-id")} />
+            {loading ? (
+              <p>Loading...</p>
+            ) : todayAppointments.length === 0 ? (
+              <p>No appointments today</p>
+            ) : (
+              todayAppointments.map((appointment) => (
+                <TodayAppointment
+                  key={appointment.id}
+                  patient={appointment.patientName}
+                  time={appointment.time}
+                  type={appointment.type}
+                  status={appointment.status}
+                />
+              ))
+            )}
           </DashboardCard>
         </div>
       </div>
     </div>
   );
 };
+
+const TodayAppointment = ({ patient, time, type, status }) => (
+  <div className="border rounded-lg p-4 flex justify-between items-start">
+    <div>
+      <h4 className="font-semibold">{patient}</h4>
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <Clock className="h-4 w-4" />
+        <span>{time}</span>
+      </div>
+      <p className="text-sm text-gray-600">Type: {type}</p>
+      <p className={`text-sm font-semibold ${status === "confirmed" ? "text-green-600" : "text-red-600"}`}>
+        {status}
+      </p>
+    </div>
+  </div>
+);
+
 
 const DashboardCard = ({ title, children }) => (
   <div className="bg-white shadow-sm rounded-lg p-6 border">
@@ -107,29 +216,6 @@ const PendingAppointment = ({ id, patient, age, reason, preferredDate, preferred
       <span>{preferredDate}</span>
       <Clock className="h-4 w-4 ml-2" />
       <span>{preferredTime}</span>
-    </div>
-  </div>
-);
-
-const TodayAppointment = ({ patient, time, type, status, onStartCall }) => (
-  <div className="border rounded-lg p-4 flex justify-between items-start">
-    <div>
-      <h4 className="font-semibold">{patient}</h4>
-      <div className="flex items-center gap-2 text-sm text-gray-600">
-        <Clock className="h-4 w-4" />
-        <span>{time}</span>
-      </div>
-    </div>
-    <div className="flex items-center gap-2">
-      <span className={`px-2 py-1 rounded-full text-sm ${
-        status === 'Completed' ? 'bg-green-100 text-green-600' :
-        status === 'In Progress' ? 'bg-blue-100 text-blue-600' :
-        'bg-yellow-100 text-yellow-600'}`}>{status}</span>
-      {type === 'Video Call' && status === 'Upcoming' && (
-        <button onClick={onStartCall} className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md">
-          <Camera className="h-4 w-4" />
-        </button>
-      )}
     </div>
   </div>
 );
