@@ -72,9 +72,19 @@ const CommunityForum = () => {
   };
 
   // Handle liking a post
-  const handleLikePost = async (postId, currentLikes) => {
+  const handleLikePost = async (postId, currentLikes, likedBy) => {
+    const userId = auth.currentUser.uid;
     const postRef = doc(db, "posts", postId);
-    await updateDoc(postRef, { likes: currentLikes + 1 });
+
+    if (likedBy.includes(userId)) {
+      // User already liked this post, prevent multiple likes
+      return;
+    }
+
+    await updateDoc(postRef, {
+      likes: currentLikes + 1,
+      likedBy: [...likedBy, userId], // Append user ID to the likedBy array
+    });
   };
 
   return (
@@ -163,7 +173,7 @@ const ForumPost = ({ post, onLike }) => (
     {/* Actions */}
     <div className="flex items-center justify-between mt-4 pt-4 border-t">
       <button
-        onClick={() => onLike(post.id, post.likes)}
+        onClick={() => onLike(post.id, post.likes, post.likedBy || [])}
         className="flex items-center gap-2 text-gray-600 hover:text-blue-600"
       >
         <ThumbsUp className="h-5 w-5" />
@@ -182,5 +192,6 @@ const ForumPost = ({ post, onLike }) => (
     </div>
   </div>
 );
+
 
 export default CommunityForum;
