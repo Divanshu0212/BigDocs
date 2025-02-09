@@ -151,10 +151,6 @@ const PatientAppointmentBooking = () => {
                     <Mail className="w-4 h-4" />
                     <span className="text-sm">{doctor.email}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm">{doctor.phone || 'Contact via email'}</span>
-                  </div>
                 </div>
               </div>
             ))}
