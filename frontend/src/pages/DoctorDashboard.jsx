@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  Calendar,
-  Clock,
-  Users,
-  Video,
-  Bell,
-  FileText,
-  Check,
-  X,
-  Pill,
-} from "lucide-react";
 import { auth, db } from "../firebase/firebase";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { Link } from "react-router-dom";
+import { Calendar, Clock, Users, Video, Bell, FileText, Check, X, Pill } from "lucide-react";
 
 const DoctorDashboard = () => {
   const [pendingAppointments, setPendingAppointments] = useState([]);
@@ -22,10 +12,9 @@ const DoctorDashboard = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        setUser(currentUser);
-        fetchAppointments(currentUser.uid);
+        await fetchDoctorDetails(currentUser.uid);
       } else {
         setUser(null);
         setPendingAppointments([]);
@@ -36,6 +25,25 @@ const DoctorDashboard = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const fetchDoctorDetails = async (uid) => {
+    try {
+      const userRef = doc(db, "users", uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setUser(userData);
+        fetchAppointments(uid);
+      } else {
+        console.error("Doctor not found in Firestore");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching doctor details:", error);
+      setLoading(false);
+    }
+  };
 
   const fetchAppointments = async (doctorId) => {
     setLoading(true);
@@ -66,33 +74,13 @@ const DoctorDashboard = () => {
     setLoading(false);
   };
 
-  const handleAcceptAppointment = async (appointmentId) => {
-    try {
-      await updateDoc(doc(db, "appointments", appointmentId), { status: "confirmed" });
-      setPendingAppointments((prev) => prev.filter((app) => app.id !== appointmentId));
-      alert("Appointment Accepted!");
-    } catch (error) {
-      console.error("Error accepting appointment:", error);
-    }
-  };
-
-  const handleRejectAppointment = async (appointmentId) => {
-    try {
-      await updateDoc(doc(db, "appointments", appointmentId), { status: "rejected" });
-      setPendingAppointments((prev) => prev.filter((app) => app.id !== appointmentId));
-      alert("Appointment Rejected!");
-    } catch (error) {
-      console.error("Error rejecting appointment:", error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 pt-16 px-6">
       <div className="max-w-7xl mx-auto py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Welcome, Dr. {user?.displayName}
+              Welcome, Dr. {user?.fullName || "Loading..."}
             </h1>
             <p className="text-gray-600">Your patient dashboard</p>
           </div>
@@ -113,7 +101,7 @@ const DoctorDashboard = () => {
             <QuickActionCard icon={<FileText />} title="Reports" description="View medical reports" />
           </Link>
           <Link to="/medications">
-            <QuickActionCard icon={<Pill/>} title="Edit Medications" description="Manage prescriptions" />
+            <QuickActionCard icon={<Pill />} title="Edit Medications" description="Manage prescriptions" />
           </Link>
         </div>
 
@@ -133,8 +121,6 @@ const DoctorDashboard = () => {
                   reason={appointment.reason}
                   preferredDate={appointment.date}
                   preferredTime={appointment.time}
-                  onAccept={handleAcceptAppointment}
-                  onReject={handleRejectAppointment}
                 />
               ))
             )}
@@ -162,6 +148,8 @@ const DoctorDashboard = () => {
     </div>
   );
 };
+
+
 
 const TodayAppointment = ({ patient, time, type, status }) => (
   <div className="border rounded-lg p-4 flex justify-between items-start">

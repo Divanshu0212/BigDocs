@@ -58,9 +58,11 @@ export const Header = () => {
     <header className="bg-white shadow-sm fixed w-full top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center">
-            <span className="text-2xl font-bold text-blue-600">BigDocs</span>
-          </div>
+          <Link to="/">
+            <div className="flex items-center">
+              <span className="text-2xl font-bold text-blue-600">BigDocs</span>
+            </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
@@ -68,7 +70,6 @@ export const Header = () => {
               Home
             </button>
             <Link to="/symptom" className="text-gray-600 hover:text-blue-600">AI Symptom Checker</Link>
-            <Link to="/find-doctors" className="text-gray-600 hover:text-blue-600">Find Doctors</Link>
             <Link to="/community" className="text-gray-600 hover:text-blue-600">Community</Link>
 
             {user ? (
@@ -102,8 +103,7 @@ export const Header = () => {
             <button onClick={handleHomeClick} className="text-gray-600 hover:text-blue-600">
               Home
             </button>
-            <Link to="/services" className="text-gray-600 hover:text-blue-600">Services</Link>
-            <Link to="/find-doctors" className="text-gray-600 hover:text-blue-600">Find Doctors</Link>
+            <Link to="/symptom" className="text-gray-600 hover:text-blue-600">AI Symptom Checker</Link>
             <Link to="/community" className="text-gray-600 hover:text-blue-600">Community</Link>
 
             {user ? (
@@ -146,9 +146,11 @@ export const Hero = () => (
         </p>
         <div className="mt-8 flex justify-center">
           <div className="rounded-md shadow">
-            <button className="px-8 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-50">
-              Get Started
-            </button>
+            <Link to="/login">
+              <button className="px-8 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-50">
+                Get Started
+              </button>
+            </Link>
           </div>
         </div>
       </div>

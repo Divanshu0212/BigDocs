@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase/firebase';
 import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
-import { Calendar, Clock, User, MapPin, Phone } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, Phone, Mail, Search } from 'lucide-react';
 
 const PatientAppointmentBooking = () => {
   const [doctors, setDoctors] = useState([]);
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [appointmentDetails, setAppointmentDetails] = useState({
     date: '',
     time: '',
@@ -18,6 +20,24 @@ const PatientAppointmentBooking = () => {
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  useEffect(() => {
+    filterDoctors();
+  }, [searchQuery, doctors]);
+
+  const filterDoctors = () => {
+    if (!searchQuery.trim()) {
+      setFilteredDoctors(doctors);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = doctors.filter(doctor => 
+      doctor.fullName?.toLowerCase().includes(query) ||
+      doctor.address?.toLowerCase().includes(query)
+    );
+    setFilteredDoctors(filtered);
+  };
 
   const fetchDoctors = async () => {
     try {
@@ -31,6 +51,7 @@ const PatientAppointmentBooking = () => {
         ...doc.data()
       }));
       setDoctors(doctorsList);
+      setFilteredDoctors(doctorsList);
     } catch (err) {
       setError('Failed to fetch doctors');
       console.error(err);
@@ -49,6 +70,8 @@ const PatientAppointmentBooking = () => {
       const appointmentData = {
         doctorId: selectedDoctor.id,
         doctorName: selectedDoctor.fullName,
+        doctorEmail: selectedDoctor.email,
+        doctorAddress: selectedDoctor.address,
         patientId: auth.currentUser.uid,
         patientName: auth.currentUser.displayName,
         patientEmail: auth.currentUser.email,
@@ -88,9 +111,24 @@ const PatientAppointmentBooking = () => {
           </div>
         )}
 
+        {!selectedDoctor && (
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search doctors by name or address..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
         {!selectedDoctor ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {doctors.map((doctor) => (
+            {filteredDoctors.map((doctor) => (
               <div
                 key={doctor.id}
                 className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
@@ -102,21 +140,29 @@ const PatientAppointmentBooking = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">{doctor.fullName}</h3>
-                    <p className="text-gray-600">{doctor.specialty || 'General Physician'}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-gray-600">
                     <MapPin className="w-4 h-4" />
-                    <span>{doctor.location || 'Main Hospital'}</span>
+                    <span className="text-sm">{doctor.address || 'Address not provided'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm">{doctor.email}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Phone className="w-4 h-4" />
-                    <span>{doctor.phone || 'Contact via email'}</span>
+                    <span className="text-sm">{doctor.phone || 'Contact via email'}</span>
                   </div>
                 </div>
               </div>
             ))}
+            {filteredDoctors.length === 0 && (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                No doctors found matching your search criteria
+              </div>
+            )}
           </div>
         ) : (
           <div className="max-w-2xl mx-auto">

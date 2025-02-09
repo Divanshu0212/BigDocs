@@ -66,13 +66,14 @@ const Login = () => {
             const userDoc = await getDoc(userRef);
 
             if (!userDoc.exists()) {
-                // If the user doesn't exist, create a new record with a default role of "patient"
+                // If the user doesn't exist, create a new record with a default role and address
                 await setDoc(userRef, {
                     uid: user.uid,
                     email: user.email,
                     role: 'patient',  // Default role
+                    address: 'NA',    // Default address
                     name: user.displayName || '',
-                    createdAt: new Date()
+                    createdAt: new Date().toISOString()
                 });
             }
 
@@ -82,6 +83,7 @@ const Login = () => {
             console.error(err);
         }
     };
+
 
 
     return (
