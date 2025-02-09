@@ -113,6 +113,10 @@ npm run dev
 ```
 
 ---
+## 📌 Deployment
+Deployed on **Vercel**: [Live Demo](https://big-docs.vercel.app/)
+
+---
 
 ## 📸 Screenshots
 (Add relevant screenshots here)
@@ -134,10 +138,7 @@ npm run dev
 
 ---
 
-## 📌 Deployment
-Deployed on **Vercel**: [Live Demo](https://big-docs.vercel.app/)
 
----
 
 ## 🤝 Contributing
 Feel free to fork this repo and submit pull requests!
@@ -145,4 +146,4 @@ Feel free to fork this repo and submit pull requests!
 ---
 
 ## 📜 License
-MIT License © 2025 Your Name
+MIT License © 2025 Divanshu Bhargava
