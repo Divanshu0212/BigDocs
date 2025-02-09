@@ -8,24 +8,27 @@ This is a **full-fledged Telemedicine and Healthcare Management Platform** that 
 ## 🌟 Features
 
 ### **🔹 Authentication & User Roles**
-- **Google Authentication** for seamless login.
-- Users are categorized into **Doctors** and **Patients**.
-- **Doctors** can **view** patient posts and appointments.
-- **Patients** can **book** appointments, **upload** reports, and **participate** in discussions.
+- **Google Authentication** for seamless login
+- Users are categorized into **Doctors** and **Patients**
+- **Doctors** can **view** patient posts and appointments
+- **Patients** can **book** appointments, **upload** reports, and **participate** in discussions
 
 ### **🔹 Patient Features**
-- **🩺 Book Appointments:** Easily schedule appointments with available doctors.
-- **💬 Community Forum:** Post queries and interact with other patients.
-- **📁 Upload & View Reports:** Upload medical reports for doctors to review.
-- **📌 Symptom Checker:** AI-driven symptom analysis to suggest possible conditions.
-- **📹 Telemedicine Consultations:** Secure video call link generated when a doctor accepts an appointment.
+- **🩺 Book Appointments:** Easily schedule appointments with available doctors
+- **💬 Community Forum:** Post queries and interact with other patients
+- **📁 Upload & View Reports:** Upload medical reports for doctors to review
+- **📌 Symptom Checker:** 
+  - AI-driven symptom analysis to suggest possible conditions
+  - Currently using a lightweight model (MVP version)
+  - Larger, more accurate model in development
+- **📹 Telemedicine Consultations:** Secure video call link generated when a doctor accepts an appointment
 
 ### **🔹 Doctor Features**
-- **📅 Manage Appointments:** Accept or reject patient bookings.
-- **🗂️ View Patient Reports:** Access and review uploaded reports.
-- **📝 Medication Editor:** Prescribe and update medications.
-- **👥 Patient List:** View all assigned patients.
-- **👨‍⚕️ Telemedicine Interface:** Join video consultations with patients.
+- **📅 Manage Appointments:** Accept or reject patient bookings
+- **🗂️ View Patient Reports:** Access and review uploaded reports
+- **📝 Medication Editor:** Prescribe and update medications
+- **👥 Patient List:** View all assigned patients
+- **👨‍⚕️ Telemedicine Interface:** Join video consultations with patients
 
 ---
 
@@ -40,31 +43,49 @@ This is a **full-fledged Telemedicine and Healthcare Management Platform** that 
 
 ---
 
+## 🤖 AI Model Details
+
+### Current Implementation
+- Using a smaller parameter model for the hackathon due to time constraints
+- Trained on a curated medical dataset for basic symptom analysis
+- Sufficient for MVP demonstration
+
+### Future Roadmap
+- Training a larger, more comprehensive model with:
+  - Increased parameter count for better accuracy
+  - Broader medical dataset coverage
+  - More sophisticated symptom analysis capabilities
+  - Enhanced diagnostic suggestions
+- Implementation of advanced NLP techniques for better understanding of patient descriptions
+- Integration with medical knowledge bases for more accurate predictions
+
+---
+
 ## 🔄 Workflow
 
 ### **1️⃣ User Registration & Authentication**
-- Users sign up via **Google Authentication**.
-- Firebase assigns roles based on registration input.
+- Users sign up via **Google Authentication**
+- Firebase assigns roles based on registration input
 
 ### **2️⃣ Patient Workflow**
-1. Patient logs in and accesses **Dashboard**.
-2. Books an appointment with an available doctor.
-3. Uploads necessary medical reports.
-4. Waits for doctor’s acceptance (Telemedicine link generated upon approval).
-5. Joins **Telemedicine Consultation** via a secure link.
-6. Receives prescribed medication and treatment plan.
+1. Patient logs in and accesses **Dashboard**
+2. Books an appointment with an available doctor
+3. Uploads necessary medical reports
+4. Waits for doctor's acceptance (Telemedicine link generated upon approval)
+5. Joins **Telemedicine Consultation** via a secure link
+6. Receives prescribed medication and treatment plan
 
 ### **3️⃣ Doctor Workflow**
-1. Doctor logs in and accesses **Dashboard**.
-2. Reviews **patient appointment requests**.
-3. Accepts/Rejects appointments.
-4. Views **patient reports** for better diagnosis.
-5. Joins **Telemedicine Consultation** through a secure link.
-6. Prescribes medications and provides follow-up instructions.
+1. Doctor logs in and accesses **Dashboard**
+2. Reviews **patient appointment requests**
+3. Accepts/Rejects appointments
+4. Views **patient reports** for better diagnosis
+5. Joins **Telemedicine Consultation** through a secure link
+6. Prescribes medications and provides follow-up instructions
 
 ### **4️⃣ Community Forum**
-- **Patients** can post health-related questions.
-- **Doctors** can view posts but cannot create new ones.
+- **Patients** can post health-related questions
+- **Doctors** can view posts but cannot create new ones
 
 ---
 
@@ -72,23 +93,23 @@ This is a **full-fledged Telemedicine and Healthcare Management Platform** that 
 
 ### **1️⃣ Clone the Repository**
 ```bash
- git clone https://github.com/your-username/your-repository.git
- cd your-repository
+git clone https://github.com/your-username/your-repository.git
+cd your-repository
 ```
 
 ### **2️⃣ Install Dependencies**
 ```bash
- npm install
+npm install
 ```
 
 ### **3️⃣ Set Up Firebase**
-- Create a Firebase project.
-- Enable **Firestore Database** and **Authentication (Google Sign-In)**.
-- Add Firebase Config to `.env.local`.
+- Create a Firebase project
+- Enable **Firestore Database** and **Authentication (Google Sign-In)**
+- Add Firebase Config to `.env.local`
 
 ### **4️⃣ Start the Development Server**
 ```bash
- npm run dev
+npm run dev
 ```
 
 ---
@@ -110,4 +131,3 @@ Feel free to fork this repo and submit pull requests!
 
 ## 📜 License
 MIT License © 2025 Your Name
-
